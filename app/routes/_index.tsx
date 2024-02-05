@@ -17,10 +17,7 @@ export default function Index() {
   }>();
 
   return (
-    <div
-      style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}
-      className="bg-red-100 dark:bg-gray-100"
-    >
+    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <Button>Click Me</Button>
       <ThemeSwitch userPreference={userPreferences.theme} />
       <ul>
