@@ -34,6 +34,7 @@ module.exports = {
         "plugin:react-hooks/recommended",
         "plugin:jsx-a11y/recommended",
       ],
+
       settings: {
         react: {
           version: "detect",
@@ -54,6 +55,9 @@ module.exports = {
       files: ["**/*.{ts,tsx}"],
       plugins: ["@typescript-eslint", "import"],
       parser: "@typescript-eslint/parser",
+      rules: {
+        "@typescript-eslint/no-explicit-any": "warn",
+      },
       settings: {
         "import/internal-regex": "^~/",
         "import/resolver": {

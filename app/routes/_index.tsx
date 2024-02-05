@@ -1,5 +1,8 @@
 import { Button } from "@components/ui/button";
+import { ThemeSwitch } from "@components/patterns/theme-switch";
 import type { MetaFunction } from "@remix-run/node";
+import { useOutletContext } from "@remix-run/react";
+import { type Theme } from "~/utils/theme.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,9 +12,17 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  const { userPreferences } = useOutletContext<{
+    userPreferences: { theme?: Theme };
+  }>();
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+    <div
+      style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}
+      className="dark:bg-grey-100 light:bg-grey-900"
+    >
       <Button>Click Me</Button>
+      <ThemeSwitch userPreference={userPreferences.theme} />
       <ul>
         <li>
           <a
