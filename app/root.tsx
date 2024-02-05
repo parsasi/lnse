@@ -56,7 +56,7 @@ export default function App() {
           }}
         />
       </head>
-      <body>
+      <body className="bg-background text-foreground">
         <Outlet
           context={{
             userPreferences: requestInfo.userPreferences,
