@@ -13,7 +13,7 @@ export function useTheme() {
   const requestInfo = useRequestInfo();
   const optimisticMode = useOptimisticThemeMode();
   if (optimisticMode) {
-    return optimisticMode === "system" ? hints.theme : optimisticMode;
+    return optimisticMode === "system" ? hints.theme : optimisticMode ?? "dark";
   }
   return requestInfo.userPreferences.theme ?? hints.theme;
 }
