@@ -22,7 +22,7 @@ export const meta: MetaFunction = () => {
 export default function index() {
   return (
     <div className="flex items-center justify-center w-full h-screen">
-      <Card className="px-2">
+      <Card className="mx-2 border-0 md:border-2 ">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Explore a log file</CardTitle>
           <CardDescription>
