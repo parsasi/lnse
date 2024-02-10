@@ -40,7 +40,7 @@ export default function index() {
               American Airlines
             </Button>
           </div>
-          <div className="relative">
+          <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -50,7 +50,7 @@ export default function index() {
               </span>
             </div>
           </div>
-          <div className="grid gap-2 mt-2">
+          <div className="grid gap-2">
             <div className="grid items-center w-full max-w-sm gap-4">
               <Label htmlFor="logFile">AirShoppingRS XML</Label>
               <Input
