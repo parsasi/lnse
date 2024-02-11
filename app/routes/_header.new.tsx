@@ -1,16 +1,22 @@
+import { json, useFetcher, type MetaFunction } from "@remix-run/react";
+import {
+  unstable_composeUploadHandlers as composeUploadHandlers,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  unstable_parseMultipartFormData as parseMultipartFormData,
+  ActionFunctionArgs,
+} from "@remix-run/node";
 import { Icons } from "@components/ui/icons";
 import { Button } from "@components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
-import { type MetaFunction } from "@remix-run/react";
+import { uploadStreamToS3 } from "@utils/aws.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -19,10 +25,31 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function index() {
+export async function loader() {
+  return json({});
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const uploadHandler = composeUploadHandlers(
+    uploadStreamToS3,
+    createMemoryUploadHandler()
+  );
+
+  const formData = await parseMultipartFormData(request, uploadHandler);
+  console.log(formData);
+  const log = formData.get("log");
+  const imgDesc = formData.get("desc");
+
+  return json({ log, imgDesc });
+};
+
+export default function Index() {
+  const fetcher = useFetcher();
+  //   const { presignedUrl } = useLoaderData<typeof loader>();
+
   return (
     <div className="flex items-center justify-center w-full h-screen">
-      <Card className="mx-2 border-0 md:border-2 ">
+      <Card className="mx-2 border-0 md:border-2">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Explore a log file</CardTitle>
           <CardDescription>
@@ -51,14 +78,18 @@ export default function index() {
             </div>
           </div>
           <div className="grid gap-2">
-            <div className="grid items-center w-full max-w-sm gap-4">
-              <Label htmlFor="logFile">AirShoppingRS XML</Label>
-              <Input
-                id="logFile"
-                type="file"
-                className="border-dashed pt-[50px] pb-[70px]"
-              />
-            </div>
+            <fetcher.Form method="post" encType="multipart/form-data">
+              <div className="grid items-center w-full max-w-sm gap-4">
+                <Label htmlFor="log">AirShoppingRS XML</Label>
+                <Input
+                  id="log"
+                  name="log"
+                  type="file"
+                  className="border-dashed pt-[50px] pb-[70px]"
+                />
+              </div>
+              <Button type="submit">Upload to S3</Button>
+            </fetcher.Form>
           </div>
         </CardContent>
       </Card>

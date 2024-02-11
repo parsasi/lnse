@@ -1,8 +1,8 @@
 import type { SSTConfig } from "sst";
-import { RemixSite } from "sst/constructs";
+import { Bucket, RemixSite } from "sst/constructs";
 
 export default {
-  config(_input) {
+  config() {
     return {
       name: "lnse-io",
       region: "us-east-1",
@@ -10,7 +10,11 @@ export default {
   },
   stacks(app) {
     app.stack(function Site({ stack }) {
-      const site = new RemixSite(stack, "site");
+      const logsBucket = new Bucket(stack, "public");
+
+      const site = new RemixSite(stack, "site", {
+        bind: [logsBucket],
+      });
       stack.addOutputs({
         url: site.url,
       });
