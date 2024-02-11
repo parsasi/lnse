@@ -13,6 +13,8 @@
     "sst:dev": "sst dev"
   },
   "dependencies": {
+    "@aws-sdk/lib-storage": "^3.511.0",
+    "@aws-sdk/s3-request-presigner": "^3.511.0",
     "@conform-to/react": "^0.8.0",
     "@conform-to/zod": "^0.8.0",
     "@radix-ui/react-checkbox": "^1.0.4",
