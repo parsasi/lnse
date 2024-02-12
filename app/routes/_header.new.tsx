@@ -44,7 +44,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
 
   const formData = await parseMultipartFormData(request, uploadHandler);
-
   const log = formData.get("log");
   const imgDesc = formData.get("desc");
 
