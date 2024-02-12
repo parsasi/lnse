@@ -1,4 +1,10 @@
-import { json, useFetcher, type MetaFunction } from "@remix-run/react";
+import { useEffect, useState, useRef } from "react";
+import {
+  json,
+  useFetcher,
+  useSubmit,
+  type MetaFunction,
+} from "@remix-run/react";
 import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
@@ -16,7 +22,9 @@ import {
 } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
+import { Skeleton } from "@components/ui/skeleton";
 import { uploadStreamToS3 } from "@utils/aws.server";
+import { findFormParent } from "@utils/dom.client";
 
 export const meta: MetaFunction = () => {
   return [
@@ -36,7 +44,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
 
   const formData = await parseMultipartFormData(request, uploadHandler);
-  console.log(formData);
   const log = formData.get("log");
   const imgDesc = formData.get("desc");
 
@@ -44,8 +51,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const fetcher = useFetcher();
-  //   const { presignedUrl } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher({
+    key: "upload-log",
+  });
+
+  const fileChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    fetcher.submit(findFormParent(e.target));
+  };
 
   return (
     <div className="flex items-center justify-center w-full h-screen">
@@ -53,16 +69,24 @@ export default function Index() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Explore a log file</CardTitle>
           <CardDescription>
-            Upload a log file or explore one of our examples
+            Upload a AirShoppingRS response or explore one of our examples
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2">
           <div className="grid grid-cols-1 gap-4">
-            <Button variant="outline" className="text-start">
+            <Button
+              variant="outline"
+              className="text-start"
+              disabled={fetcher.state !== "idle"}
+            >
               <Icons.airCanada className="w-6 h-6 mr-2" />
               Air Canada
             </Button>
-            <Button variant="outline" className="text-start">
+            <Button
+              variant="outline"
+              className="text-start"
+              disabled={fetcher.state !== "idle"}
+            >
               <Icons.americanAirline className="w-6 h-6 mr-2" />
               American Airlines
             </Button>
@@ -78,18 +102,22 @@ export default function Index() {
             </div>
           </div>
           <div className="grid gap-2">
-            <fetcher.Form method="post" encType="multipart/form-data">
-              <div className="grid items-center w-full max-w-sm gap-4">
-                <Label htmlFor="log">AirShoppingRS XML</Label>
-                <Input
-                  id="log"
-                  name="log"
-                  type="file"
-                  className="border-dashed pt-[50px] pb-[70px]"
-                />
-              </div>
-              <Button type="submit">Upload to S3</Button>
-            </fetcher.Form>
+            {fetcher.state === "submitting" ? (
+              <Skeleton className={`w-full h-[152px] rounded`} />
+            ) : (
+              <fetcher.Form method="post" encType="multipart/form-data">
+                <div className="grid items-center w-full gap-4">
+                  <Label htmlFor="log">AirShoppingRS XML</Label>
+                  <Input
+                    id="log"
+                    name="log"
+                    type="file"
+                    className="border-dashed pt-[50px] pb-[70px]"
+                    onChange={fileChangeHandler}
+                  />
+                </div>
+              </fetcher.Form>
+            )}
           </div>
         </CardContent>
       </Card>
