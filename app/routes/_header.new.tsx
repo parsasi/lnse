@@ -1,8 +1,6 @@
-import { useEffect, useState, useRef } from "react";
 import {
   json,
   useFetcher,
-  useSubmit,
   type MetaFunction,
 } from "@remix-run/react";
 import {
@@ -23,8 +21,11 @@ import {
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { Skeleton } from "@components/ui/skeleton";
+import { createSession } from "@modules/session/session.server";
+import { createAsset } from "@modules/asset/asset.server";
 import { uploadStreamToS3 } from "@utils/aws.server";
 import { findFormParent } from "@utils/dom.client";
+import { invariantResponse } from "@utils/invariant";
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,10 +35,11 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader() {
-  return json({});
+  return json({ });
 }
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  //TODO: validate the given file.
   const uploadHandler = composeUploadHandlers(
     uploadStreamToS3,
     createMemoryUploadHandler()
@@ -45,9 +47,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = await parseMultipartFormData(request, uploadHandler);
   const log = formData.get("log");
-  const imgDesc = formData.get("desc");
 
-  return json({ log, imgDesc });
+  invariantResponse(log , 'Could not upload the file.')
+
+  //TODO: validate the returned log.
+
+  createSession({})
+  .then((newSession) => createAsset({
+    path: log.toString(),
+    session: newSession[0]?.id
+  }))
+  .then((newAsset) => {
+    
+  })
+  .catch((error) => {
+    console.error(error);
+    throw new Error('Could not create a new session.');
+  })
+
 };
 
 export default function Index() {

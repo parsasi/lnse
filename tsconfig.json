@@ -18,7 +18,9 @@
       "~/*": ["./app/*"],
       "@components/*": ["./app/components/*"],
       "@utils/*": ["./app/utils/*"],
-      "@routes/*": ["./app/routes/*"]
+      "@routes/*": ["./app/routes/*"],
+      "@db/*" : ["./db/*"],
+      "@modules/*": ["./app/modules/*"]
     },
 
     // Remix takes care of building everything in `remix build`.
