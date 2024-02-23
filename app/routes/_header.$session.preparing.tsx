@@ -23,12 +23,17 @@ import { invariant } from "../utils/invariant";
     ];
   };
   
-  export async function loader({ params } : LoaderFunctionArgs) {
+
+export function getRoute(routeParams: {session : string}){
+  return `/${routeParams.session}/preparing`
+}
+
+export async function loader({ params } : LoaderFunctionArgs) {
     invariant(params.session , "Invalid Session");
     const session = await findSessionById(params.session);
     invariant(session?.[0] , "Invalid Session");
     return json({ session: session[0]});
-  }
+}
 
   export default function Index() {
 

@@ -8,6 +8,7 @@ import {
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
   ActionFunctionArgs,
+  redirect,
 } from "@remix-run/node";
 import { Icons } from "@components/ui/icons";
 import { Button } from "@components/ui/button";
@@ -23,6 +24,7 @@ import { Label } from "@components/ui/label";
 import { Skeleton } from "@components/ui/skeleton";
 import { createSession } from "@modules/session/session.server";
 import { createAsset } from "@modules/asset/asset.server";
+import { getRoute as getPreparingRoute } from "./_header.$session.preparing";
 import { uploadStreamToS3 } from "@utils/aws.server";
 import { findFormParent } from "@utils/dom.client";
 import { invariantResponse } from "@utils/invariant";
@@ -34,6 +36,10 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
+
+export async function getRoute(routeParams: Record<string, never>){
+  return `/new`;
+}
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   //TODO: validate the given file.
@@ -51,17 +57,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try{
     const session = await createSession({});
+    const sessionId = session[0]?.id;
     await createAsset({
       path: log.toString(),
-      session: session[0]?.id
+      session:sessionId
     });
-
-    json({
-      session
-    });
+ 
+    return redirect(getPreparingRoute({
+      session: sessionId
+    }))
 
   }catch(e){
-   reportError(e , 'error');
+   return reportError(e , 'error');
   }
 };
 

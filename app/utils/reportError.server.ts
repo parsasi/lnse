@@ -12,6 +12,7 @@ export function reportErrorToUser(message : string , level: 'warning' | 'error' 
 }
 
 export function reportError(e: string | unknown, level : 'warning' | 'error' , responseInit?: ResponseInit){
+    throw e;
     let message = 'Internal Server Error';
     if (
         typeof e === "object" &&

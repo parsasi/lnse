@@ -5,6 +5,6 @@ export default {
   out: "./db/migrations",
   driver: "turso",
   dbCredentials: {
-    url: 'file:./db/local.db',
+    url: 'file:./local.db',
   }
 } satisfies Config;
