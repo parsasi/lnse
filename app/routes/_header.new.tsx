@@ -26,6 +26,7 @@ import { createAsset } from "@modules/asset/asset.server";
 import { uploadStreamToS3 } from "@utils/aws.server";
 import { findFormParent } from "@utils/dom.client";
 import { invariantResponse } from "@utils/invariant";
+import { reportError } from "@utils/reportError.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -33,10 +34,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
-
-export async function loader() {
-  return json({ });
-}
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   //TODO: validate the given file.
@@ -52,19 +49,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   //TODO: validate the returned log.
 
-  createSession({})
-  .then((newSession) => createAsset({
-    path: log.toString(),
-    session: newSession[0]?.id
-  }))
-  .then((newAsset) => {
-    
-  })
-  .catch((error) => {
-    console.error(error);
-    throw new Error('Could not create a new session.');
-  })
+  try{
+    const session = await createSession({});
+    await createAsset({
+      path: log.toString(),
+      session: session[0]?.id
+    });
 
+    json({
+      session
+    });
+
+  }catch(e){
+   reportError(e , 'error');
+  }
 };
 
 export default function Index() {
