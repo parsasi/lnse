@@ -13,8 +13,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@components/ui/card";  
-import {  findSessionById } from "../modules/session/session.server";
-import { invariant } from "../utils/invariant";
+import { findSessionById } from "@modules/session/session.server";
+import { getRoute as getSessionRoute } from './_header.$session._index'
+import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
+import { getRequestUrl } from "@utils/url";
+import { invariant } from "@utils/invariant";
+import { copy } from '@utils/copy'
 
   export const meta: MetaFunction = () => {
     return [
@@ -28,28 +33,45 @@ export function getRoute(routeParams: {session : string}){
   return `/${routeParams.session}/preparing`
 }
 
-export async function loader({ params } : LoaderFunctionArgs) {
+export async function loader({ params , request } : LoaderFunctionArgs) {
     invariant(params.session , "Invalid Session");
     const session = await findSessionById(params.session);
-    invariant(session?.[0] , "Invalid Session");
-    return json({ session: session[0]});
+    const sessionId = session?.[0]?.id;
+    invariant(sessionId , "Invalid Session");
+    const sessionPath = getSessionRoute({session : sessionId});
+    const host = request.headers.get('host');
+    invariant(host , "Invalid Host");
+    const sessionRoute = getRequestUrl(host, sessionPath)
+    return json({ session: session[0] , sessionRoute});
 }
 
-  export default function Index() {
+export default function Index() {
+    const {session , sessionRoute} = useLoaderData<typeof loader>();
 
-    const {session} = useLoaderData<typeof loader>()
+    const copyAndNotify = async (text: string) => {
+      copy(text).then(() => {
+        //TODO: notify using sooner notifications
+      }).catch(() => {
+        //TODO: notify using sooner the fact that it failed
+      });
+    }
   
     return (
-      <div className="flex items-center justify-center w-full h-screen">
+      <div className="flex items-center justify-center w-full h-screen motion-safe:animate-pulse">
         <Card className="mx-2 border-0 md:border-2">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">We are sorting things out</CardTitle>
+            <CardTitle className="text-2xl">Getting Things Ready</CardTitle>
             <CardDescription>
-              Please hang tights
+              Share this link with other collaborators.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2">
-            {session.id}
+            <div className="flex space-x-2">
+              <Input value={sessionRoute} readOnly />
+              <Button variant="secondary" className="shrink-0" onClick={() => copyAndNotify(sessionRoute)}>
+                Copy Link
+              </Button>
+            </div> 
           </CardContent>
         </Card>
       </div>
