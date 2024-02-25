@@ -57,6 +57,7 @@ export default function Index() {
       <MovingBorder
         as={Card}
         className="mx-2 border-none"
+        containerClassName="border-0 md:border-2"
         duration={3000}
         borderRadius="1rem"
       >
