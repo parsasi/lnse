@@ -1,12 +1,13 @@
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import AWS from "aws-sdk";
 import { Queue } from "sst/node/queue";
 
-export async function sendMessage<TData>(message: TData) {
-  const sqs = new SQSClient({});
-  const command = new SendMessageCommand({
-    QueueUrl: Queue["processQueue"].queueUrl,
-    MessageBody: JSON.stringify(message),
-  });
+const sqs = new AWS.SQS();
 
-  return await sqs.send(command);
+export async function sendMessage<TData>(message: TData) {
+  return await sqs
+    .sendMessage({
+      QueueUrl: Queue.Queue.queueUrl,
+      MessageBody: JSON.stringify(message),
+    })
+    .promise();
 }

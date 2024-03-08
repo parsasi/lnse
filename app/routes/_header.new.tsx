@@ -49,8 +49,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       session: sessionId,
     });
 
-    const queuedUp = await sendMessage(Queue["processQueue"].queueUrl, { sessionId });
-    console.log(queuedUp);
+    const queuedUp = await sendMessage({ sessionId });
+    console.log("Queued up", queuedUp);
 
     return redirect(
       getPreparingRoute({

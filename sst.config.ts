@@ -11,10 +11,10 @@ export default {
   stacks(app) {
     app.stack(function Site({ stack }) {
       const logsBucket = new Bucket(stack, "public");
-      const TURSO_URL = new Config.Secret(stack, "TUROS_URL");
+      const TURSO_URL = new Config.Secret(stack, "TURSO_URL");
       const TURSO_TOKEN = new Config.Secret(stack, "TURSO_TOKEN");
-      const processLogsQueue = new Queue(stack, "process-logs", {
-        consumer: "src/functions/process-log.server.main",
+      const processLogsQueue = new Queue(stack, "Queue", {
+        consumer: "app/functions/process-log.server.main",
       });
 
       const site = new RemixSite(stack, "site", {
