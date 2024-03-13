@@ -1,12 +1,8 @@
 import { json, type MetaFunction, useLoaderData } from "@remix-run/react";
 import { LoaderFunctionArgs } from "@remix-run/node";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@components/ui/card";
+import { useEventSource } from "@utils/hooks/use-event-source";
+import { getRoute as getSessionStatusRoute, EVENT_NAME } from "./$session.status";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/ui/card";
 import { MovingBorder } from "@components/ui/moving-border";
 import { findSessionById } from "@modules/session/session.server";
 import { getRoute as getSessionRoute } from "./_header.$session._index";
@@ -17,10 +13,7 @@ import { invariant } from "@utils/invariant";
 import { copy } from "@utils/copy";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+  return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
 export function getRoute(routeParams: { session: string }) {
@@ -36,11 +29,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const host = request.headers.get("host");
   invariant(host, "Invalid Host");
   const sessionRoute = getRequestUrl(host, sessionPath);
-  return json({ session: session[0], sessionRoute });
+
+  const eventSourcePath = getSessionStatusRoute({ session: sessionId });
+  return json({ session: session[0], sessionRoute, eventSourcePath });
 }
 
 export default function Index() {
-  const { session, sessionRoute } = useLoaderData<typeof loader>();
+  const { session, sessionRoute, eventSourcePath } = useLoaderData<typeof loader>();
+  const status = useEventSource(eventSourcePath, { event: EVENT_NAME });
+
+  console.log(status);
 
   const copyAndNotify = async (text: string) => {
     copy(text)
@@ -63,12 +61,10 @@ export default function Index() {
       >
         <CardHeader className="space-y-1 bg-transparent">
           <CardTitle className="text-2xl">Getting Things Ready</CardTitle>
-          <CardDescription>
-            Share this link with other collaborators.
-          </CardDescription>
+          <CardDescription>Share this link with other collaborators.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 bg-transparent">
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center">
             <Input value={sessionRoute} readOnly />
             <Button
               variant="secondary"

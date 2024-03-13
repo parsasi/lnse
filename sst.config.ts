@@ -1,5 +1,5 @@
 import type { SSTConfig } from "sst";
-import { Bucket, RemixSite, Config } from "sst/constructs";
+import { Bucket, RemixSite, Config, Queue } from "sst/constructs";
 
 export default {
   config() {
@@ -11,11 +11,19 @@ export default {
   stacks(app) {
     app.stack(function Site({ stack }) {
       const logsBucket = new Bucket(stack, "public");
-      const TURSO_URL = new Config.Secret(stack, "TUROS_URL");
+      const TURSO_URL = new Config.Secret(stack, "TURSO_URL");
       const TURSO_TOKEN = new Config.Secret(stack, "TURSO_TOKEN");
+      const processLogsQueue = new Queue(stack, "Queue", {
+        consumer: {
+          function: {
+            handler: "app/functions/process-log.server.main",
+            bind: [logsBucket],
+          },
+        },
+      });
 
       const site = new RemixSite(stack, "site", {
-        bind: [logsBucket, TURSO_URL, TURSO_TOKEN],
+        bind: [logsBucket, TURSO_URL, TURSO_TOKEN, processLogsQueue],
       });
       stack.addOutputs({
         url: site.url,

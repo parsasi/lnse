@@ -1,8 +1,4 @@
-import {
-  json,
-  useFetcher,
-  type MetaFunction,
-} from "@remix-run/react";
+import { useFetcher, type MetaFunction } from "@remix-run/react";
 import {
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
@@ -10,15 +6,10 @@ import {
   ActionFunctionArgs,
   redirect,
 } from "@remix-run/node";
+import { Queue } from "sst/constructs";
 import { Icons } from "@components/ui/icons";
 import { Button } from "@components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { Skeleton } from "@components/ui/skeleton";
@@ -29,46 +20,45 @@ import { uploadStreamToS3 } from "@utils/aws.server";
 import { findFormParent } from "@utils/dom.client";
 import { invariantResponse } from "@utils/invariant";
 import { reportError } from "@utils/reportError.server";
+import { sendMessage } from "~/utils/queue.server";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+  return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
-export async function getRoute(routeParams: Record<string, never>){
+export async function getRoute(routeParams: Record<string, never>) {
   return `/new`;
 }
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   //TODO: validate the given file.
-  const uploadHandler = composeUploadHandlers(
-    uploadStreamToS3,
-    createMemoryUploadHandler()
-  );
+  const uploadHandler = composeUploadHandlers(uploadStreamToS3, createMemoryUploadHandler());
 
   const formData = await parseMultipartFormData(request, uploadHandler);
   const log = formData.get("log");
 
-  invariantResponse(log , 'Could not upload the file.')
+  invariantResponse(log, "Could not upload the file.");
 
   //TODO: validate the returned log.
 
-  try{
+  try {
     const session = await createSession({});
     const sessionId = session[0]?.id;
     await createAsset({
       path: log.toString(),
-      session:sessionId
+      session: sessionId,
     });
- 
-    return redirect(getPreparingRoute({
-      session: sessionId
-    }))
 
-  }catch(e){
-   return reportError(e , 'error');
+    const queuedUp = await sendMessage({ sessionId });
+    console.log("Queued up", queuedUp);
+
+    return redirect(
+      getPreparingRoute({
+        session: sessionId,
+      })
+    );
+  } catch (e) {
+    return reportError(e, "error");
   }
 };
 
@@ -96,19 +86,11 @@ export default function Index() {
         </CardHeader>
         <CardContent className="grid gap-2">
           <div className="grid grid-cols-1 gap-4">
-            <Button
-              variant="outline"
-              className="text-start"
-              disabled={fetcher.state !== "idle"}
-            >
+            <Button variant="outline" className="text-start" disabled={fetcher.state !== "idle"}>
               <Icons.airCanada className="w-6 h-6 mr-2" />
               Air Canada
             </Button>
-            <Button
-              variant="outline"
-              className="text-start"
-              disabled={fetcher.state !== "idle"}
-            >
+            <Button variant="outline" className="text-start" disabled={fetcher.state !== "idle"}>
               <Icons.americanAirline className="w-6 h-6 mr-2" />
               American Airlines
             </Button>
@@ -118,9 +100,7 @@ export default function Index() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 bg-background text-muted-foreground">
-                Or Upload Your Own
-              </span>
+              <span className="px-2 bg-background text-muted-foreground">Or Upload Your Own</span>
             </div>
           </div>
           <div className="grid gap-2">

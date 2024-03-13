@@ -40,7 +40,7 @@ export function ThemeSwitch({
         <button
           name="intent"
           value="update-theme"
-          type="submit"
+             type="submit"
           className="flex items-center justify-center w-8 h-8 cursor-pointer"
         >
           {modeLabel[mode as Theme]}
