@@ -1,9 +1,14 @@
 import { SQSEvent } from "aws-lambda";
-import {} from "@modules/session/session.server";
+import { updateSession } from "@modules/session/session.server";
+import { SessionStatus } from "@db/schema.server";
+
+export type HandlerBody = {
+  sessionId: string;
+};
 
 export async function main(event: SQSEvent) {
-  console.log("event", event);
+  const payload = JSON.parse(event.Records[0].body) as HandlerBody;
   setTimeout(() => {
-    console.log("done");
-  }, 3000);
+    updateSession(payload.sessionId, { status: SessionStatus.ready });
+  }, 10000);
 }
