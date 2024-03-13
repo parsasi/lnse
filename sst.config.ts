@@ -14,7 +14,12 @@ export default {
       const TURSO_URL = new Config.Secret(stack, "TURSO_URL");
       const TURSO_TOKEN = new Config.Secret(stack, "TURSO_TOKEN");
       const processLogsQueue = new Queue(stack, "Queue", {
-        consumer: "app/functions/process-log.server.main",
+        consumer: {
+          function: {
+            handler: "app/functions/process-log.server.main",
+            bind: [logsBucket],
+          },
+        },
       });
 
       const site = new RemixSite(stack, "site", {
