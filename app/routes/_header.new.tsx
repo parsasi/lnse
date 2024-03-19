@@ -50,12 +50,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
 
     const queuedUp = await sendMessage({ sessionId });
-    console.log("Queued up", queuedUp);
 
     return redirect(
       getPreparingRoute({
         session: sessionId,
-      })
+      }),
     );
   } catch (e) {
     return reportError(e, "error");
