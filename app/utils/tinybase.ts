@@ -1,34 +1,29 @@
-import { createStore, createCustomPersister, type Store } from "tinybase";
+import { createStore, type Store, createCustomPersister } from "tinybase";
 
-export function getPersistedData(dataImporter: (store: Store) => Store) {
-  const store = createStore();
-  dataImporter(store);
+export const isInstanceOf = (
+  thing: unknown,
+  cls: MapConstructor | SetConstructor | ObjectConstructor,
+): boolean => thing instanceof cls;
 
-  return new Promise((resolve, reject) => {
-    store.addDidFinishTransactionListener((store) => {
-      resolve(JSON.stringify(store));
-    });
-  });
-}
+const jsonString = (obj: unknown): string =>
+  JSON.stringify(obj, (_key, value) =>
+    isInstanceOf(value, Map) ? Object.fromEntries([...value]) : value,
+  );
 
-//If we can just stringify the store it self, we don't need this function.
-function createJsonPersister(
-  store: Store,
-  {
-    get,
-    set,
-  }: {
-    get: () => Promise<string>;
-    set: (content: string) => Promise<void>;
-  },
-) {
-  let interval: NodeJS.Timeout;
+export const createRemotePersister = (store: Store, load: (data: string) => Promise<void>) => {
+  const getPersisted = async () => {
+    throw new Error(
+      "This persister should only be used to transform data into the tinybase format",
+    );
+  };
+
+  const setPersisted = async (getContent: () => void) => load(jsonString(getContent()));
 
   return createCustomPersister(
     store,
-    async () => JSON.parse(await get()),
-    async (store) => await set(JSON.stringify(store)),
-    (listener) => (interval = setInterval(listener, 1000)),
-    () => clearInterval(interval),
+    getPersisted,
+    setPersisted,
+    () => {},
+    () => {},
   );
-}
+};
