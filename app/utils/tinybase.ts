@@ -1,4 +1,4 @@
-import { createStore, type Store, createCustomPersister } from "tinybase";
+import { type Store, createStore, createCustomPersister } from "tinybase";
 
 export const isInstanceOf = (
   thing: unknown,
@@ -27,3 +27,12 @@ export const createRemotePersister = (store: Store, load: (data: string) => Prom
     () => {},
   );
 };
+
+export function getStorifiedData(loadStore: (store: Store) => Promise<Store>) {
+  return new Promise<string>((resolve) => {
+    const store = createStore();
+    const persister = createRemotePersister(store, async (jsonofiedData) => resolve(jsonofiedData));
+
+    loadStore(store).then(() => persister.save());
+  });
+}

@@ -20,7 +20,8 @@ import { uploadStreamToS3 } from "@utils/aws.server";
 import { findFormParent } from "@utils/dom.client";
 import { invariantResponse } from "@utils/invariant";
 import { reportError } from "@utils/reportError.server";
-import { sendMessage } from "~/utils/queue.server";
+import { sendMessage } from "@utils/queue.server";
+import { getStorifiedData } from "@utils/tinybase";
 
 export const meta: MetaFunction = () => {
   return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
@@ -49,6 +50,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       session: sessionId,
     });
 
+    const store = await getStorifiedData(async (store) => {
+      store
+        .setTable("pets", { fido: { species: "dog" } })
+        .setCell("pets", "fido", "color", "brown");
+      return store;
+    });
+    console.log(store);
     const queuedUp = await sendMessage({ sessionId });
 
     return redirect(
